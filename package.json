@@ -1,0 +1,20 @@
+{
+  "name": "campus-operations-platform",
+  "version": "1.0.0",
+  "description": "AI-Powered Campus Operations Platform - Sprint 1 Foundation",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "prisma:generate": "cd server && npm run prisma:generate",
+    "prisma:migrate": "cd server && npm run prisma:migrate"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "socket.io-client": "^4.8.4"
+  }
+}

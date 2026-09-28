@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Roles
+enum Role {
+  STUDENT
+  STAFF
+  ADMIN
+}
+
+// Service Request Statuses
+enum RequestStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+// Request Priorities
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// AI Background Processing Status (Sprint 5 — BullMQ job tracking)
+enum AiProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// Service Request Categories
+enum Category {
+  IT
+  ELECTRICAL
+  PLUMBING
+  CLEANING
+  SECURITY
+  CLASSROOM
+  HOSTEL
+  TRANSPORT
+  OTHER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  createdRequests  ServiceRequest[] @relation("CreatedRequests")
+  assignedRequests ServiceRequest[] @relation("AssignedRequests")
+
+  @@map("users")
+}
+
+model Department {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  users    User[]
+  requests ServiceRequest[]
+
+  @@map("departments")
+}
+
+model ServiceRequest {
+  id          String        @id @default(uuid())
+  title       String
+  description String        @db.Text
+  status      RequestStatus @default(OPEN)
+  priority    Priority      @default(MEDIUM)
+  category    Category
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // AI Intelligence Layer Fields (Advisory ONLY - never overwrites final category/priority)
+  aiCategory       String?
+  aiPriority       Priority?
+  aiPriorityReason String?             @db.Text
+  aiProcessedAt    DateTime?
+
+  // Sprint 5: BullMQ background job processing status
+  aiProcessingStatus AiProcessingStatus @default(PENDING)
+
+  studentId       String
+  student         User          @relation("CreatedRequests", fields: [studentId], references: [id])
+
+  departmentId    String?
+  department      Department?   @relation(fields: [departmentId], references: [id])
+
+  assignedStaffId String?
+  assignedStaff   User?         @relation("AssignedRequests", fields: [assignedStaffId], references: [id])
+
+  similaritiesAsSource RequestSimilarity[] @relation("SourceSimilarity")
+  similaritiesAsTarget RequestSimilarity[] @relation("TargetSimilarity")
+
+  @@map("service_requests")
+}
+
+model RequestSimilarity {
+  id                String         @id @default(uuid())
+  requestId         String
+  request           ServiceRequest @relation("SourceSimilarity", fields: [requestId], references: [id], onDelete: Cascade)
+  similarRequestId  String
+  similarRequest    ServiceRequest @relation("TargetSimilarity", fields: [similarRequestId], references: [id], onDelete: Cascade)
+  similarityScore   Float
+  createdAt         DateTime       @default(now())
+
+  @@unique([requestId, similarRequestId])
+  @@map("request_similarities")
+}

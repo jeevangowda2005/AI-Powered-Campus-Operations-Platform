@@ -1,0 +1,31 @@
+{
+  "name": "campus-operations-backend",
+  "version": "1.0.0",
+  "description": "Backend API for AI-Powered Campus Operations Platform",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "worker": "node src/workers/ai.worker.js",
+    "worker:dev": "nodemon src/workers/ai.worker.js",
+    "prisma:generate": "prisma generate --schema=../prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema=../prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.19.1",
+    "bcryptjs": "^2.4.3",
+    "bullmq": "^6.3.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.20.0",
+    "ioredis": "^6.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "prisma": "^5.19.1",
+    "redis-memory-server": "^0.17.1"
+  }
+}
